@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { SearchIcon } from 'lucide-react';
 import {
-  cityOptions,
+  cityOptionsByCountry,
   countryOptions,
   stayTags,
   type StayTag,
@@ -11,6 +11,12 @@ import {
 
 export function SearchBar() {
   const [selectedTags, setSelectedTags] = useState<StayTag[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+
+  const availableCities = selectedCountry
+    ? cityOptionsByCountry[selectedCountry] ?? []
+    : [];
 
   const toggleTag = (tag: StayTag) => {
     setSelectedTags((current) =>
@@ -32,7 +38,11 @@ export function SearchBar() {
             <select
               aria-label="Country"
               className="w-full rounded-xl border-none bg-white p-0 text-sm font-medium text-slate-800 focus:outline-none focus:ring-0 dark:bg-slate-900 dark:text-slate-100"
-              defaultValue=""
+              value={selectedCountry}
+              onChange={(event) => {
+                setSelectedCountry(event.target.value);
+                setSelectedCity('');
+              }}
             >
               <option value="" disabled>
                 Country
@@ -48,13 +58,15 @@ export function SearchBar() {
           <label className="flex min-h-11 items-center rounded-2xl border border-white/30 bg-white/40 px-3 py-2 text-sm text-slate-700 transition hover:border-primary-300 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-500/30 dark:border-slate-200/10 dark:bg-slate-900/70 dark:text-slate-100">
             <select
               aria-label="City"
-              className="w-full rounded-xl border-none bg-white p-0 text-sm font-medium text-slate-800 focus:outline-none focus:ring-0 dark:bg-slate-900 dark:text-slate-100"
-              defaultValue=""
+              className="w-full rounded-xl border-none bg-white p-0 text-sm font-medium text-slate-800 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-900 dark:text-slate-100"
+              value={selectedCity}
+              onChange={(event) => setSelectedCity(event.target.value)}
+              disabled={!selectedCountry}
             >
               <option value="" disabled>
-                City
+                {selectedCountry ? 'City' : 'Choose country first'}
               </option>
-              {cityOptions.map((city) => (
+              {availableCities.map((city) => (
                 <option key={city} value={city}>
                   {city}
                 </option>

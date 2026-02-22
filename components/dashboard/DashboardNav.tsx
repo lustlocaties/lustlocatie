@@ -17,6 +17,7 @@ type DashboardNavProps = {
 
 export function DashboardNav({ links }: DashboardNavProps) {
   const [open, setOpen] = useState(false);
+  const workInProgressPath = '/work-in-progress';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/70 backdrop-blur-xl transition-colors dark:border-slate-200/10 dark:bg-slate-950/60">
@@ -37,7 +38,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
           {links.map((link, index) => (
             <Link
               key={link}
-              href="#"
+              href={workInProgressPath}
               className={`text-sm font-medium transition-colors duration-300 hover:text-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent dark:focus-visible:ring-offset-slate-950 ${
                 index === 0
                   ? 'text-primary-500 underline decoration-primary-500 underline-offset-8'
@@ -50,21 +51,25 @@ export function DashboardNav({ links }: DashboardNavProps) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <button
+          <Link
+            href={workInProgressPath}
             aria-label="Quick search"
             className="hidden h-11 items-center justify-center rounded-full border border-white/30 bg-white/40 px-4 text-slate-700 transition hover:-translate-y-0.5 hover:border-primary-400 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:border-slate-200/10 dark:bg-slate-900/50 dark:text-slate-200 md:flex"
           >
             <SearchIcon className="h-4 w-4" />
-          </button>
+          </Link>
 
           <div className="rounded-full border border-white/30 bg-white/40 p-2 text-slate-700 dark:border-slate-200/10 dark:bg-slate-900/50 dark:text-slate-100">
             <ThemeSwitch />
           </div>
 
-          <button className="hidden h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:inline-flex">
+          <Link
+            href={workInProgressPath}
+            className="hidden h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:inline-flex"
+          >
             <HeartIcon className="h-4 w-4" />
             Sign in
-          </button>
+          </Link>
 
           <button
             aria-label="Toggle menu"
@@ -82,16 +87,19 @@ export function DashboardNav({ links }: DashboardNavProps) {
             {links.map((link) => (
               <Link
                 key={link}
-                href="#"
+                href={workInProgressPath}
                 className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-primary-50 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 {link}
               </Link>
             ))}
-            <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+            <Link
+              href={workInProgressPath}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
               <HeartIcon className="h-4 w-4" />
               Sign in
-            </button>
+            </Link>
           </div>
         </div>
       ) : null}

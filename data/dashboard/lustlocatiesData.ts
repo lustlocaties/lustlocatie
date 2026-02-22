@@ -41,16 +41,18 @@ export const stayTags: StayTag[] = [
 
 export const countryOptions = ['Netherlands', 'Belgium', 'Germany'];
 
-export const cityOptions = [
-  'Amsterdam',
-  'Rotterdam',
-  'Utrecht',
-  'Eindhoven',
-  'Breda',
-  'Den Haag',
-  'Antwerp',
-  'Berlin',
-];
+export const cityOptionsByCountry: Record<string, string[]> = {
+  Netherlands: [
+    'Amsterdam',
+    'Rotterdam',
+    'Utrecht',
+    'Eindhoven',
+    'Breda',
+    'Den Haag',
+  ],
+  Belgium: ['Antwerp'],
+  Germany: ['Berlin'],
+};
 
 export const featuredStays: FeaturedStay[] = [
   {
