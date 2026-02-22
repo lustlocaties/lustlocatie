@@ -38,7 +38,12 @@ export async function POST(request: NextRequest) {
     });
 
     let synced = 0;
-    const details = [];
+    const details: Array<{
+      senderId: string;
+      receiverId: string;
+      senderFriends: string[];
+      receiverFriends: string[];
+    }> = [];
 
     for (const req of acceptedRequests) {
       const senderId = req.senderId; // Keep as ObjectId
@@ -75,6 +80,13 @@ export async function POST(request: NextRequest) {
 
     // Get updated user
     const user = await UserModel.findById(payload.sub);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       ok: true,

@@ -30,6 +30,13 @@ export async function GET(request: NextRequest) {
     // Get current user with all fields
     const user = await UserModel.findById(payload.sub).lean();
 
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({
       ok: true,
       user: {
