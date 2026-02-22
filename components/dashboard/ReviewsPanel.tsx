@@ -1,5 +1,5 @@
 import { StarIcon, UserCircle2Icon } from 'lucide-react';
-import { ReviewItem } from '@/data/dashboard/stayPrivateData';
+import { ReviewItem } from '@/data/dashboard/lustlocatiesData';
 
 type ReviewsPanelProps = {
   reviews: ReviewItem[];

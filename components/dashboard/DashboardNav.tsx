@@ -27,7 +27,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
           </div>
           <div>
             <p className="font-display text-lg font-bold text-slate-900 dark:text-slate-100">
-              StayPrivate
+              Lustlocaties
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">Discreet stays</p>
           </div>

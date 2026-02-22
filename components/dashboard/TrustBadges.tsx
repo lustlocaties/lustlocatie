@@ -1,5 +1,5 @@
 import { BadgeCheckIcon, HeadsetIcon, ShieldCheckIcon } from 'lucide-react';
-import { TrustBadge } from '@/data/dashboard/stayPrivateData';
+import { TrustBadge } from '@/data/dashboard/lustlocatiesData';
 
 type TrustBadgesProps = {
   badges: TrustBadge[];

@@ -1,4 +1,9 @@
-export type StayTag = 'Discreet Entry' | 'City Escape' | 'Romantic' | 'Spa Access';
+export type StayTag =
+  | 'Discreet Entry'
+  | 'City Escape'
+  | 'Romantic'
+  | 'Spa Access'
+  | 'Soundproof';
 
 export type FeaturedStay = {
   id: string;
@@ -26,7 +31,26 @@ export type TrustBadge = {
 
 export const navLinks = ['Discover', 'Map', 'Favorites', 'Support'];
 
-export const heroBadges = ['Adults Only', 'Verified Hosts', 'Discrete Payments'];
+export const stayTags: StayTag[] = [
+  'Discreet Entry',
+  'City Escape',
+  'Romantic',
+  'Spa Access',
+  'Soundproof',
+];
+
+export const countryOptions = ['Netherlands', 'Belgium', 'Germany'];
+
+export const cityOptions = [
+  'Amsterdam',
+  'Rotterdam',
+  'Utrecht',
+  'Eindhoven',
+  'Breda',
+  'Den Haag',
+  'Antwerp',
+  'Berlin',
+];
 
 export const featuredStays: FeaturedStay[] = [
   {
@@ -37,7 +61,7 @@ export const featuredStays: FeaturedStay[] = [
     rating: 4.9,
     privacyScore: 92,
     romanceScore: 88,
-    tags: ['Discreet Entry', 'Romantic'],
+    tags: ['Discreet Entry', 'Romantic', 'Soundproof'],
   },
   {
     id: 'stay-2',
@@ -47,7 +71,7 @@ export const featuredStays: FeaturedStay[] = [
     rating: 4.8,
     privacyScore: 89,
     romanceScore: 91,
-    tags: ['City Escape', 'Spa Access'],
+    tags: ['City Escape', 'Spa Access', 'Soundproof'],
   },
   {
     id: 'stay-3',
@@ -87,7 +111,7 @@ export const featuredStays: FeaturedStay[] = [
     rating: 4.7,
     privacyScore: 88,
     romanceScore: 87,
-    tags: ['City Escape', 'Discreet Entry'],
+    tags: ['City Escape', 'Discreet Entry', 'Soundproof'],
   },
 ];
 

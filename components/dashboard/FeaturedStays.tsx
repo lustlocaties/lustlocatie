@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { HeartIcon, MapPinIcon, StarIcon } from 'lucide-react';
-import { FeaturedStay } from '@/data/dashboard/stayPrivateData';
+import { FeaturedStay } from '@/data/dashboard/lustlocatiesData';
 
 type FeaturedStaysProps = {
   stays: FeaturedStay[];

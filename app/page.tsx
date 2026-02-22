@@ -1,5 +1,5 @@
-import { StayPrivateLandingPage } from '@/components/dashboard/StayPrivateLandingPage';
+import { LustlocatiesLandingPage } from '@/components/dashboard/LustlocatiesLandingPage';
 
 export default function Page() {
-  return <StayPrivateLandingPage />;
+  return <LustlocatiesLandingPage />;
 }

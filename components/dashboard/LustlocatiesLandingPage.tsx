@@ -8,13 +8,12 @@ import { SearchBar } from '@/components/dashboard/SearchBar';
 import { TrustBadges } from '@/components/dashboard/TrustBadges';
 import {
   featuredStays,
-  heroBadges,
   navLinks,
   reviewItems,
   trustBadges,
-} from '@/data/dashboard/stayPrivateData';
+} from '@/data/dashboard/lustlocatiesData';
 
-export function StayPrivateLandingPage() {
+export function LustlocatiesLandingPage() {
   return (
     <div className="relative w-full overflow-hidden bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <div className="pointer-events-none absolute inset-0">
@@ -32,9 +31,8 @@ export function StayPrivateLandingPage() {
         <DashboardNav links={navLinks} />
 
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-6 md:py-8 lg:gap-8 lg:px-8">
-          <HeroSection badges={heroBadges} />
+          <HeroSection />
           <SearchBar />
-          <MetricsMapRow />
 
           <section className="grid grid-cols-1 gap-6 lg:grid-cols-10 lg:gap-8">
             <div className="lg:col-span-7">
@@ -44,6 +42,8 @@ export function StayPrivateLandingPage() {
               <ReviewsPanel reviews={reviewItems} />
             </div>
           </section>
+
+          <MetricsMapRow />
 
           <TrustBadges badges={trustBadges} />
         </div>
