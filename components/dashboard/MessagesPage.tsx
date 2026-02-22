@@ -68,6 +68,180 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
   const shouldScrollToBottomRef = useRef(false);
   const lastConversationIdRef = useRef<string | null>(null);
 
+  const fetchConversations = useCallback(async (isBackgroundPoll = false) => {
+    try {
+      if (!isBackgroundPoll) {
+        setIsLoading(true);
+      }
+      setError('');
+
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${baseUrl}/api/messages`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch conversations');
+      }
+
+      const data = await response.json();
+      const newConversations = data.conversations || [];
+
+      // Only update state if conversations actually changed - use a more robust comparison
+      setConversations(prev => {
+        if (prev.length !== newConversations.length) return newConversations;
+
+        // Compare each conversation's essential properties
+        const hasChanged = prev.some((conv, idx) => {
+          const newConv = newConversations[idx];
+          return !newConv ||
+                 conv.id !== newConv.id ||
+                 conv.name !== newConv.name ||
+                 conv.lastMessage?.content !== newConv.lastMessage?.content ||
+                 conv.unreadCount !== newConv.unreadCount;
+        });
+
+        return hasChanged ? newConversations : prev;
+      });
+
+      if (newConversations.length > 0 && !contactIdFromUrl && !selectedConversation) {
+        setSelectedConversation(newConversations[0]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load conversations');
+    } finally {
+      if (!isBackgroundPoll) {
+        setIsLoading(false);
+      }
+    }
+  }, [contactIdFromUrl, selectedConversation]);
+
+  const startNewConversation = useCallback(async (contactId: string) => {
+    try {
+      setError('');
+
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      // Fetch the contact's info
+      const response = await fetch(`${baseUrl}/api/contacts`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contact');
+      }
+
+      const data = await response.json();
+      const contact = (data.contacts as Friend[] | undefined)?.find((c) => c._id === contactId);
+
+      if (!contact) {
+        setError('Contact not found');
+        return;
+      }
+
+      // Create a placeholder conversation
+      const newConversation: Conversation = {
+        id: contact._id,
+        name: contact.name,
+        avatarUrl: contact.avatarUrl,
+        lastMessage: {
+          content: '',
+          createdAt: new Date().toISOString(),
+        },
+        unreadCount: 0,
+      };
+
+      setSelectedConversation(newConversation);
+      setMessages([]);
+
+      // Add to conversations list if not already there
+      if (!conversations.find(c => c.id === contactId)) {
+        setConversations(prev => [newConversation, ...prev]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start conversation');
+    }
+  }, [conversations]);
+
+  const fetchFriends = useCallback(async () => {
+    try {
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${baseUrl}/api/contacts`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch friends');
+      }
+
+      const data = await response.json();
+      setFriends(data.contacts || []);
+    } catch (err) {
+      console.error('Failed to load friends:', err);
+    }
+  }, []);
+
+  const fetchMessages = useCallback(async (userId: string, isBackgroundPoll = false) => {
+    try {
+      setError('');
+      if (isBackgroundPoll) {
+        setIsRefreshingMessages(true);
+      }
+
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${baseUrl}/api/messages/${userId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
+
+      const data = await response.json();
+      const newMessages = data.messages || [];
+
+      // Only update state if messages actually changed - use more robust comparison
+      setMessages(prev => {
+        if (prev.length !== newMessages.length) return newMessages;
+
+        // Compare message IDs and read status
+        const hasChanged = prev.some((msg, idx) => {
+          const newMsg = newMessages[idx];
+          return !newMsg ||
+                 msg.id !== newMsg.id ||
+                 msg.content !== newMsg.content ||
+                 msg.isRead !== newMsg.isRead;
+        });
+
+        return hasChanged ? newMessages : prev;
+      });
+    } catch (err) {
+      // Only show errors on initial fetch, not on background polls
+      if (!isBackgroundPoll) {
+        setError(err instanceof Error ? err.message : 'Failed to load messages');
+      }
+    } finally {
+      if (isBackgroundPoll) {
+        setIsRefreshingMessages(false);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     fetchConversations();
     fetchFriends();
@@ -133,177 +307,6 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     return () => clearInterval(intervalId);
   }, [fetchMessages, selectedConversation]);
 
-  const fetchConversations = useCallback(async (isBackgroundPoll = false) => {
-    try {
-      if (!isBackgroundPoll) {
-        setIsLoading(true);
-      }
-      setError('');
-
-      const baseUrl = typeof window !== 'undefined'
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-      const response = await fetch(`${baseUrl}/api/messages`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch conversations');
-      }
-
-      const data = await response.json();
-      const newConversations = data.conversations || [];
-      
-      // Only update state if conversations actually changed - use a more robust comparison
-      setConversations(prev => {
-        if (prev.length !== newConversations.length) return newConversations;
-        
-        // Compare each conversation's essential properties
-        const hasChanged = prev.some((conv, idx) => {
-          const newConv = newConversations[idx];
-          return !newConv || 
-                 conv.id !== newConv.id ||
-                 conv.name !== newConv.name ||
-                 conv.lastMessage?.content !== newConv.lastMessage?.content ||
-                 conv.unreadCount !== newConv.unreadCount;
-        });
-        
-        return hasChanged ? newConversations : prev;
-      });
-
-      if (newConversations.length > 0 && !contactIdFromUrl && !selectedConversation) {
-        setSelectedConversation(newConversations[0]);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load conversations');
-    } finally {
-      if (!isBackgroundPoll) {
-        setIsLoading(false);
-      }
-    }
-  }, [contactIdFromUrl, selectedConversation]);
-
-  const startNewConversation = useCallback(async (contactId: string) => {
-    try {
-      setError('');
-
-      const baseUrl = typeof window !== 'undefined'
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-      // Fetch the contact's info
-      const response = await fetch(`${baseUrl}/api/contacts`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch contact');
-      }
-
-      const data = await response.json();
-      const contact = (data.contacts as Friend[] | undefined)?.find((c) => c._id === contactId);
-
-      if (!contact) {
-        setError('Contact not found');
-        return;
-      }
-
-      // Create a placeholder conversation
-      const newConversation: Conversation = {
-        id: contact._id,
-        name: contact.name,
-        avatarUrl: contact.avatarUrl,
-        lastMessage: {
-          content: '',
-          createdAt: new Date().toISOString(),
-        },
-        unreadCount: 0,
-      };
-
-      setSelectedConversation(newConversation);
-      setMessages([]);
-      
-      // Add to conversations list if not already there
-      if (!conversations.find(c => c.id === contactId)) {
-        setConversations(prev => [newConversation, ...prev]);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start conversation');
-    }
-  }, [conversations]);
-  const fetchFriends = useCallback(async () => {
-    try {
-      const baseUrl = typeof window !== 'undefined'
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-      const response = await fetch(`${baseUrl}/api/contacts`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch friends');
-      }
-
-      const data = await response.json();
-      setFriends(data.contacts || []);
-    } catch (err) {
-      console.error('Failed to load friends:', err);
-    }
-  }, []);
-  const fetchMessages = useCallback(async (userId: string, isBackgroundPoll = false) => {
-    try {
-      setError('');
-      if (isBackgroundPoll) {
-        setIsRefreshingMessages(true);
-      }
-
-      const baseUrl = typeof window !== 'undefined'
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-      const response = await fetch(`${baseUrl}/api/messages/${userId}`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch messages');
-      }
-
-      const data = await response.json();
-      const newMessages = data.messages || [];
-      
-      // Only update state if messages actually changed - use more robust comparison
-      setMessages(prev => {
-        if (prev.length !== newMessages.length) return newMessages;
-        
-        // Compare message IDs and read status
-        const hasChanged = prev.some((msg, idx) => {
-          const newMsg = newMessages[idx];
-          return !newMsg || 
-                 msg.id !== newMsg.id ||
-                 msg.content !== newMsg.content ||
-                 msg.isRead !== newMsg.isRead;
-        });
-        
-        return hasChanged ? newMessages : prev;
-      });
-    } catch (err) {
-      // Only show errors on initial fetch, not on background polls
-      if (!isBackgroundPoll) {
-        setError(err instanceof Error ? err.message : 'Failed to load messages');
-      }
-    } finally {
-      if (isBackgroundPoll) {
-        setIsRefreshingMessages(false);
-      }
-    }
-  }, []);
 
   const handleSendMessage = async () => {
     if (!selectedConversation || !newMessage.trim()) return;
