@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Card,
@@ -71,13 +71,13 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
   useEffect(() => {
     fetchConversations();
     fetchFriends();
-  }, []);
+  }, [fetchConversations, fetchFriends]);
 
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.id);
     }
-  }, [selectedConversation]);
+  }, [fetchMessages, selectedConversation]);
 
   useEffect(() => {
     if (!selectedConversation?.id) return;
@@ -98,7 +98,7 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
         startNewConversation(contactIdFromUrl);
       }
     }
-  }, [contactIdFromUrl, conversations]);
+  }, [contactIdFromUrl, conversations, startNewConversation]);
 
   useEffect(() => {
     if (!shouldScrollToBottomRef.current) return;
@@ -120,7 +120,7 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(intervalId);
-  }, [contactIdFromUrl]);
+  }, [contactIdFromUrl, fetchConversations]);
 
   // Poll for new messages in active conversation
   useEffect(() => {
@@ -131,9 +131,9 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     }, 10000); // Poll every 10 seconds
 
     return () => clearInterval(intervalId);
-  }, [selectedConversation]);
+  }, [fetchMessages, selectedConversation]);
 
-  const fetchConversations = async (isBackgroundPoll = false) => {
+  const fetchConversations = useCallback(async (isBackgroundPoll = false) => {
     try {
       if (!isBackgroundPoll) {
         setIsLoading(true);
@@ -183,9 +183,9 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
         setIsLoading(false);
       }
     }
-  };
+  }, [contactIdFromUrl, selectedConversation]);
 
-  const startNewConversation = async (contactId: string) => {
+  const startNewConversation = useCallback(async (contactId: string) => {
     try {
       setError('');
 
@@ -204,7 +204,7 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
       }
 
       const data = await response.json();
-      const contact = data.contacts?.find((c: any) => c._id === contactId);
+      const contact = (data.contacts as Friend[] | undefined)?.find((c) => c._id === contactId);
 
       if (!contact) {
         setError('Contact not found');
@@ -233,8 +233,8 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start conversation');
     }
-  };
-  const fetchFriends = async () => {
+  }, [conversations]);
+  const fetchFriends = useCallback(async () => {
     try {
       const baseUrl = typeof window !== 'undefined'
         ? window.location.origin
@@ -254,8 +254,8 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     } catch (err) {
       console.error('Failed to load friends:', err);
     }
-  };
-  const fetchMessages = async (userId: string, isBackgroundPoll = false) => {
+  }, []);
+  const fetchMessages = useCallback(async (userId: string, isBackgroundPoll = false) => {
     try {
       setError('');
       if (isBackgroundPoll) {
@@ -303,7 +303,7 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
         setIsRefreshingMessages(false);
       }
     }
-  };
+  }, []);
 
   const handleSendMessage = async () => {
     if (!selectedConversation || !newMessage.trim()) return;
