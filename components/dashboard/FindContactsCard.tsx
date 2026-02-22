@@ -126,6 +126,7 @@ export function FindContactsCard({ onFriendAdded }: FindContactsCardProps) {
     }, 300);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   const sendFriendRequest = async (userId: string) => {

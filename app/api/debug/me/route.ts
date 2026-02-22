@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         _id: String(user._id),
         name: user.name,
         email: user.email,
-        friends: user.friends ? user.friends.map((id: any) => String(id)) : [],
+        friends: user.friends ? user.friends.map((id) => String(id)) : [],
         friendsCount: user.friends ? user.friends.length : 0,
       },
     });
