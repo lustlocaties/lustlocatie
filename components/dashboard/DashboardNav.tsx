@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   LogOutIcon,
   MenuIcon,
@@ -22,6 +21,7 @@ type DashboardNavProps = {
 export function DashboardNav({ links }: DashboardNavProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -128,19 +128,19 @@ export function DashboardNav({ links }: DashboardNavProps) {
 
   useEffect(() => {
     if (pathname === dashboardPath) {
-      const section = new URLSearchParams(window.location.search).get('section');
+      const section = searchParams.get('section');
       setSelectedSection(section ?? 'profile');
       return;
     }
 
-    if (pathname !== '/work-in-progress') {
+    if (pathname !== workInProgressPath) {
       setSelectedSection('discover');
       return;
     }
 
-    const section = new URLSearchParams(window.location.search).get('section');
+    const section = searchParams.get('section');
     setSelectedSection(section ?? 'discover');
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
