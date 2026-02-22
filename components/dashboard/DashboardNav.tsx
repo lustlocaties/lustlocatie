@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -27,6 +27,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [selectedSection, setSelectedSection] = useState('discover');
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -68,6 +69,19 @@ export function DashboardNav({ links }: DashboardNavProps) {
     const section = new URLSearchParams(window.location.search).get('section');
     setSelectedSection(section ?? 'discover');
   }, [pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    };
+
+    if (accountDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [accountDropdownOpen]);
 
   const workInProgressPath = '/work-in-progress';
   const accountHref = isAuthenticated ? '/dashboard' : '/login';
@@ -182,7 +196,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
           </div>
 
           {isAuthenticated ? (
-            <div className="relative hidden md:block">
+            <div className="relative hidden md:block" ref={accountDropdownRef}>
               <button
                 onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                 className="h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 inline-flex"

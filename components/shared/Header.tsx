@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LandingHeader, LandingHeaderMenuItem } from '@/components/landing';
 import BrandThemeToggle from '@/components/shared/BrandThemeToggle';
 import ThemeSwitch from '@/components/shared/ThemeSwitch';
@@ -14,6 +14,7 @@ export const Header = ({ className }: { className?: string }) => {
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,6 +46,19 @@ export const Header = ({ className }: { className?: string }) => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    };
+
+    if (accountDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [accountDropdownOpen]);
 
   const authHref = isAuthenticated ? '/dashboard' : '/auth';
   const authLabel = isAuthenticated ? 'My account' : 'Inloggen';
@@ -103,7 +117,7 @@ export const Header = ({ className }: { className?: string }) => {
       <LandingHeaderMenuItem href="/help">{'Help'}</LandingHeaderMenuItem>
 
       {isAuthenticated ? (
-        <div className="relative">
+        <div className="relative" ref={accountDropdownRef}>
           <button
             onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 rounded-full bg-primary-50 hover:bg-primary-100 dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition"
