@@ -26,6 +26,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [selectedSection, setSelectedSection] = useState('discover');
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -180,25 +181,55 @@ export function DashboardNav({ links }: DashboardNavProps) {
             <ThemeSwitch />
           </div>
 
-          <Link
-            href={accountHref}
-            className="hidden h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:inline-flex"
-          >
-            <UserIcon className="h-4 w-4" />
-            {accountLabel}
-          </Link>
-
           {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={onLogout}
-              disabled={isLoggingOut}
-              className="hidden h-11 items-center gap-2 rounded-full border border-white/30 bg-white/40 px-4 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-primary-400 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-200/10 dark:bg-slate-900/50 dark:text-slate-200 md:inline-flex"
+            <div className="relative hidden md:block">
+              <button
+                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                className="h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 inline-flex"
+              >
+                <UserIcon className="h-4 w-4" />
+                My account
+              </button>
+
+              {accountDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/30 bg-white/95 shadow-lg backdrop-blur-sm dark:border-slate-200/10 dark:bg-slate-900/95 z-50">
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setAccountDropdownOpen(false)}
+                    className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 rounded-t-xl first:rounded-t-xl"
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    href="/dashboard?section=messages"
+                    onClick={() => setAccountDropdownOpen(false)}
+                    className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10"
+                  >
+                    Messages
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccountDropdownOpen(false);
+                      onLogout();
+                    }}
+                    disabled={isLoggingOut}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-red-50 hover:text-red-600 dark:text-slate-200 dark:hover:bg-red-900/20 border-t border-white/20 dark:border-slate-200/10 rounded-b-xl disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isLoggingOut ? 'Logging out...' : 'Logout'}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href={accountHref}
+              className="hidden h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:inline-flex"
             >
-              <LogOutIcon className="h-4 w-4" />
-              {isLoggingOut ? 'Logging out...' : 'Logout'}
-            </button>
-          ) : null}
+              <UserIcon className="h-4 w-4" />
+              {accountLabel}
+            </Link>
+          )}
 
           <button
             aria-label="Toggle menu"
@@ -224,25 +255,45 @@ export function DashboardNav({ links }: DashboardNavProps) {
                 {link}
               </Link>
             ))}
-            <Link
-              href={accountHref}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
-              <UserIcon className="h-4 w-4" />
-              {accountLabel}
-            </Link>
-
+            
             {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={onLogout}
-                disabled={isLoggingOut}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/40 px-4 text-sm font-semibold text-slate-700 transition hover:border-primary-400 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-200/10 dark:bg-slate-900/50 dark:text-slate-200"
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-primary-50 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  Profile
+                </Link>
+                <Link
+                  href="/dashboard?section=messages"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-primary-50 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  Messages
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    onLogout();
+                  }}
+                  disabled={isLoggingOut}
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/40 px-4 text-sm font-semibold text-slate-700 transition hover:border-primary-400 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-200/10 dark:bg-slate-900/50 dark:text-slate-200"
+                >
+                  <LogOutIcon className="h-4 w-4" />
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+              </>
+            ) : (
+              <Link
+                href={accountHref}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                <LogOutIcon className="h-4 w-4" />
-                {isLoggingOut ? 'Logging out...' : 'Logout'}
-              </button>
-            ) : null}
+                <UserIcon className="h-4 w-4" />
+                {accountLabel}
+              </Link>
+            )}
           </div>
         </div>
       ) : null}
