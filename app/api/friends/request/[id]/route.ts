@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
@@ -40,7 +40,8 @@ export async function PUT(
 
     await connectToDatabase();
 
-    const friendRequest = await FriendRequestModel.findById(params.id);
+    const { id } = await params;
+    const friendRequest = await FriendRequestModel.findById(id);
 
     if (!friendRequest) {
       return NextResponse.json(
