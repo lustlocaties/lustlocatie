@@ -13,18 +13,19 @@ export default function Cookies() {
           </h1>
 
           <p className="mt-6 md:text-xl">
-            At Mevolut, we use cookies to enhance your experience, personalize
-            content, and analyze website traffic. Cookies help us understand how
-            visitors interact with our platform, enabling us to improve our
-            services and ensure a safer, more efficient experience for you.
+            At Lustlocaties, we use cookies to enhance your experience,
+            personalize content, and analyze website traffic. Cookies help us
+            understand how visitors explore listings and features, enabling us
+            to improve our services and ensure a safer, more efficient
+            experience for you.
           </p>
 
           <p className="mt-6 md:text-xl">
             By using our website, you consent to our use of cookies in
             accordance with this policy. You can manage your cookie preferences
             through your browser settings at any time. Please note that
-            disabling cookies may affect some functionalities of our platform,
-            and certain features might not work as intended.
+            disabling cookies may affect some functionalities of our site, and
+            certain features might not work as intended.
           </p>
         </section>
       </div>

@@ -13,34 +13,34 @@ export default function FAQ() {
           </h1>
 
           <p className="mt-6 md:text-xl">
-            Welcome to the Mevolut FAQ. Here you'll find answers to the most
-            common questions about managing your money with us.
+            Welcome to the Lustlocaties FAQ. Here you'll find answers to the
+            most common questions about finding discreet stays with us.
           </p>
 
           <p className="mt-6 md:text-xl">
-            <strong>How do I get started with Mevolut?</strong> Signing up is
-            easy and free! Simply create an account to start tracking your
-            expenses, sending money, and growing your savings securely.
+            <strong>How do I get started with Lustlocaties?</strong> Signing up
+            is easy and free. Create an account to save favorites, contact
+            hosts, and request bookings.
           </p>
 
           <p className="mt-6 md:text-xl">
-            <strong>Is my financial information safe?</strong> Absolutely. We
-            prioritize your security with advanced encryption and security
-            protocols to keep your data safe.
+            <strong>Is my personal information safe?</strong> Absolutely. We
+            prioritize your privacy with advanced encryption and security
+            controls to keep your data protected.
           </p>
 
           <p className="mt-6 md:text-xl">
-            <strong>Can I use Mevolut on any device?</strong> Yes, our platform
-            is fully responsive and accessible from any device with internet
-            access.
+            <strong>Can I use Lustlocaties on any device?</strong> Yes, our
+            platform is fully responsive and accessible from any device with
+            internet access.
           </p>
 
           <p className="mt-6 md:text-xl">
             <strong>
-              What features are available to help me manage my money?
+              What features are available to help me find private stays?
             </strong>{' '}
-            You can track expenses, send and receive money, set savings goals,
-            and view detailed reports to better understand your finances.
+            You can filter by privacy tags, explore the map, compare listings,
+            and use AI search to describe exactly what you need.
           </p>
 
           <p className="mt-6 md:text-xl">

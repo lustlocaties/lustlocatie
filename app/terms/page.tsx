@@ -499,7 +499,7 @@ export default function TermsPage() {
             service providers, or licensors be liable for any injury, loss,
             claim, or any direct, indirect, incidental, punitive, special, or
             consequential damages of any kind, including, without limitation,
-            lost profits, lost revenue, lost savings, loss of data, replacement
+            lost profits, lost revenue, lost bookings, loss of data, replacement
             costs, or any similar damages, whether based in contract, tort
             (including negligence), strict liability, or otherwise, arising from
             your use of any of the service or any products procured using the

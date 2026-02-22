@@ -30,8 +30,8 @@ export default function PrivacyPolicyPage() {
               This Privacy Policy describes how{' '}
               <span className="font-bold">{metadata.businessName}</span> (the
               "Site," "we," "us," or "our") collects, uses, and discloses your
-              personal information when you visit, use our services, or make a
-              purchase from <span className="font-bold">{metadata.domain}</span>{' '}
+              personal information when you visit, use our services, or book a
+              stay through <span className="font-bold">{metadata.domain}</span>{' '}
               (the "Site") or otherwise communicate with us (collectively, the
               "Services"). For purposes of this Privacy Policy, "you" and "your"
               means you as the user of the Services, whether you are a customer,
@@ -97,16 +97,16 @@ export default function PrivacyPolicyPage() {
                 number, email.
               </li>
               <li>
-                Order information including your name, billing address, shipping
-                address, payment confirmation, email address, phone number.
+                Reservation information including your name, billing address,
+                stay details, payment confirmation, email address, phone number.
               </li>
               <li>
                 Account information including your username, password, security
                 questions.
               </li>
               <li>
-                Shopping information including the items you view, put in your
-                cart or add to your wishlist.
+                Browsing information including listings you view, save, or add
+                to your favorites.
               </li>
               <li>
                 Customer support information including the information you
@@ -147,10 +147,10 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 Our payment processors, who collect payment information (e.g.,
-                bank account, credit or debit card information, billing address)
-                to process your payment in order to fulfill your orders and
-                provide you with products or services you have requested, in
-                order to perform our contract with you.
+                credit or debit card information, billing address) to process
+                your payment in order to fulfill your reservations and provide
+                you with services you have requested, in order to perform our
+                contract with you.
               </li>
               <li>
                 When you visit our Site, open or click on emails we send you, or
@@ -173,14 +173,12 @@ export default function PrivacyPolicyPage() {
               How We Use Your Personal Information
             </h3>
             <p>
-              - Providing Products and Services. We use your personal
-              information to provide you with the Services in order to perform
-              our contract with you, including to process your payments, fulfill
-              your orders, to send notifications to you related to your account,
-              purchases, returns, exchanges, or other transactions, to create,
-              maintain, and otherwise manage your account, to arrange for
-              shipping, facilitate any returns and exchanges, and to enable you
-              to post reviews.
+              - Providing Services. We use your personal information to provide
+              you with the Services in order to perform our contract with you,
+              including to process your payments, fulfill your reservations, to
+              send notifications to you related to your account, bookings,
+              cancellations, or other transactions, to create, maintain, and
+              otherwise manage your account, and to enable you to post reviews.
             </p>
             <p>
               - Marketing and Advertising. We use your personal information for

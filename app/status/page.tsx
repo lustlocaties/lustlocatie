@@ -13,18 +13,17 @@ export default function Status() {
           </h1>
 
           <p className="mt-6 md:text-xl">
-            At Mevolut, we prioritize the availability and security of your
-            financial tools. Our system status page provides real-time updates
-            on the operational status of our platform, including services
-            related to managing your money, tracking expenses, sending money,
-            and growing your savings. We are committed to maintaining a seamless
-            experience so you can manage your finances easily and confidently.
+            At Lustlocaties, we prioritize the availability and security of our
+            discovery tools. Our system status page provides real-time updates
+            on the operational status of our platform, including search,
+            listings, and messaging. We are committed to maintaining a seamless
+            experience so you can plan your stay easily and confidently.
           </p>
 
           <p className="mt-6 md:text-xl">
             If you encounter any issues or have questions about our system, our
             team is here to support you. Stay informed with the latest updates
-            to ensure you always have access to your finances when you need them
+            to ensure you always have access to the platform when you need it
             most.
           </p>
         </section>

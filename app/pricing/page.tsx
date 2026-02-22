@@ -56,7 +56,7 @@ export default function PricingPage() {
                     gridTemplateColumns: `repeat(${frequencies.length}, minmax(0, 1fr))`,
                   }}
                 >
-                  <Label className="sr-only">Payment frequency</Label>
+                  <Label className="sr-only">Plan frequency</Label>
                   {frequencies.map((option) => (
                     <Label
                       className={cn(

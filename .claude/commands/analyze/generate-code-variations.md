@@ -318,7 +318,7 @@ Business Risks:
 /dev:code-permutation-tester Test 5 different sorting algorithms for large dataset processing with memory and speed constraints
 
 # Architecture pattern evaluation
-/dev:code-permutation-tester Compare microservices vs monolith vs modular monolith for payment processing system
+/dev:code-permutation-tester Compare microservices vs monolith vs modular monolith for reservation processing system
 
 # Framework selection simulation
 /dev:code-permutation-tester Evaluate React vs Vue vs Angular for customer dashboard with performance and maintainability focus

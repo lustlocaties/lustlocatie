@@ -13,18 +13,18 @@ export default function Security() {
           </h1>
 
           <p className="mt-6 md:text-xl">
-            At Mevolut, we understand that managing your finances requires
-            trust. That’s why we employ industry-leading security measures to
-            protect your personal information and funds. From encrypted
-            transactions to secure data storage, your safety is our top concern.
+            At Lustlocaties, we understand that planning private stays requires
+            trust. That is why we employ industry-leading security measures to
+            protect your personal information and booking activity. From
+            encrypted connections to secure data storage, your safety is our top
+            concern.
           </p>
 
           <p className="mt-6 md:text-xl">
-            Our platform is designed with your privacy in mind, ensuring that
-            your money and data are always safeguarded. Focus on growing your
-            savings, sending money, and managing expenses with
-            confidence—knowing that security is built into every detail of our
-            service.
+            Our platform is designed with your privacy in mind, ensuring your
+            profile and preferences are safeguarded. Focus on discovering
+            discreet stays and planning your getaway with confidence, knowing
+            that security is built into every detail of our service.
           </p>
         </section>
       </div>
