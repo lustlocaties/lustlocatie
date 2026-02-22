@@ -32,7 +32,11 @@ export function DashboardNav({ links }: DashboardNavProps) {
 
     const checkSession = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
+        const baseUrl = typeof window !== 'undefined' 
+          ? window.location.origin 
+          : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        
+        const response = await fetch(`${baseUrl}/api/auth/me`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -106,7 +110,11 @@ export function DashboardNav({ links }: DashboardNavProps) {
     setIsLoggingOut(true);
 
     try {
-      await fetch('/api/auth/logout', {
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      
+      await fetch(`${baseUrl}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });

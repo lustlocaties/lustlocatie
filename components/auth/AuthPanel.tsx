@@ -49,7 +49,11 @@ export function AuthPanel({ initialTab = 'login' }: { initialTab?: AuthTab }) {
 
     const checkSession = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
+        const baseUrl = typeof window !== 'undefined' 
+          ? window.location.origin 
+          : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        
+        const response = await fetch(`${baseUrl}/api/auth/me`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -93,7 +97,11 @@ export function AuthPanel({ initialTab = 'login' }: { initialTab?: AuthTab }) {
   };
 
   const submitAuth = async (endpoint: '/api/auth/login' | '/api/auth/register', payload: object) => {
-    const response = await fetch(endpoint, {
+    const baseUrl = typeof window !== 'undefined' 
+      ? window.location.origin 
+      : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    
+    const response = await fetch(`${baseUrl}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

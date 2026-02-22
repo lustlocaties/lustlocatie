@@ -14,7 +14,11 @@ export const Header = ({ className }: { className?: string }) => {
 
     const checkSession = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
+        const baseUrl = typeof window !== 'undefined' 
+          ? window.location.origin 
+          : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        
+        const response = await fetch(`${baseUrl}/api/auth/me`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -22,7 +26,7 @@ export const Header = ({ className }: { className?: string }) => {
         if (isMounted) {
           setIsAuthenticated(response.ok);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
           setIsAuthenticated(false);
         }
