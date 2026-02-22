@@ -63,7 +63,7 @@ export function AuthPanel({ initialTab = 'login' }: { initialTab?: AuthTab }) {
         }
 
         if (response.ok) {
-          router.replace('/dashboard');
+          router.replace('/');
           router.refresh();
           return;
         }
@@ -134,7 +134,7 @@ export function AuthPanel({ initialTab = 'login' }: { initialTab?: AuthTab }) {
         return;
       }
 
-      router.push('/dashboard');
+      router.push('/');
       router.refresh();
     } catch {
       setErrorMessage('Inloggen is mislukt. Probeer opnieuw.');
@@ -156,7 +156,7 @@ export function AuthPanel({ initialTab = 'login' }: { initialTab?: AuthTab }) {
         return;
       }
 
-      router.push('/dashboard');
+      router.push('/');
       router.refresh();
     } catch {
       setErrorMessage('Registreren is mislukt. Probeer opnieuw.');
@@ -254,9 +254,9 @@ export function AuthPanel({ initialTab = 'login' }: { initialTab?: AuthTab }) {
                 type="button"
                 variant="secondary"
                 className="mt-4 w-full"
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/')}
               >
-                Ga terug
+                Terug naar home
               </Button>
             </TabsContent>
 
@@ -329,9 +329,9 @@ export function AuthPanel({ initialTab = 'login' }: { initialTab?: AuthTab }) {
                 type="button"
                 variant="secondary"
                 className="mt-4 w-full"
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/')}
               >
-                Ga terug
+                Terug naar home
               </Button>
             </TabsContent>
           </Tabs>

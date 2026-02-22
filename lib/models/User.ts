@@ -9,6 +9,17 @@ export interface IUser {
   role: UserRole;
   avatarUrl?: string;
   isActive: boolean;
+  // Profile fields
+  bio?: string;
+  location?: string;
+  phone?: string;
+  website?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  dateOfBirth?: Date;
+  bio_updated_at?: Date;
+  // Friends
+  friends: Schema.Types.ObjectId[];
+  blockedUsers: Schema.Types.ObjectId[];
 }
 
 const UserSchema = new Schema<IUser>(
@@ -46,6 +57,52 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
       required: true,
+    },
+    // Profile fields
+    bio: {
+      type: String,
+      default: '',
+      maxlength: 500,
+      trim: true,
+    },
+    location: {
+      type: String,
+      default: '',
+      maxlength: 100,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    website: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other', 'prefer-not-to-say'],
+      default: 'prefer-not-to-say',
+    },
+    dateOfBirth: {
+      type: Date,
+      default: null,
+    },
+    bio_updated_at: {
+      type: Date,
+      default: null,
+    },
+    friends: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
+    },
+    blockedUsers: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
     },
   },
   {

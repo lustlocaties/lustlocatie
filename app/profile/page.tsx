@@ -1,18 +1,15 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { DashboardNav } from '@/components/dashboard/DashboardNav';
 import { ProfilePage } from '@/components/dashboard/ProfilePage';
-import { MessagesPage } from '@/components/dashboard/MessagesPage';
 
 const navLinks = ['Discover', 'Blog'];
 
-function DashboardContent() {
-  const searchParams = useSearchParams();
+function ProfileContent() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -32,8 +29,6 @@ function DashboardContent() {
           return;
         }
 
-        const data = await response.json();
-        setCurrentUserId(data.user.id);
         setIsAuthenticated(true);
       } catch (error) {
         router.push('/auth?tab=login');
@@ -50,7 +45,7 @@ function DashboardContent() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading dashboard...</p>
+          <p className="text-gray-500">Loading profile...</p>
         </div>
       </div>
     );
@@ -60,27 +55,17 @@ function DashboardContent() {
     return null;
   }
 
-  const section = searchParams.get('section') || 'profile';
-
   return (
     <>
       <DashboardNav links={navLinks} />
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="flex justify-center">
-            {section === 'messages' ? (
-              <MessagesPage currentUserId={currentUserId} />
-            ) : (
-              <ProfilePage />
-            )}
-          </div>
-        </div>
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-12">
+        <ProfilePage />
       </main>
     </>
   );
 }
 
-export default function DashboardPage() {
+export default function ProfilePageRoute() {
   return (
     <Suspense
       fallback={
@@ -92,8 +77,7 @@ export default function DashboardPage() {
         </div>
       }
     >
-      <DashboardContent />
+      <ProfileContent />
     </Suspense>
   );
 }
-

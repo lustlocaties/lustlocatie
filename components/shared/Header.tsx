@@ -13,11 +13,34 @@ export const Header = ({ className }: { className?: string }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const router = useRouter();
   const accountDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted = true;
+
+    const fetchPendingRequestsCount = async (baseUrl: string) => {
+      try {
+        console.log('[Header] Fetching pending requests from:', `${baseUrl}/api/friends/requests`);
+        const response = await fetch(`${baseUrl}/api/friends/requests`, {
+          credentials: 'include',
+        });
+        
+        console.log('[Header] Response status:', response.status, response.ok);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[Header] Response data:', data);
+          if (isMounted) {
+            console.log('[Header] Setting pending requests count to:', data.requests.length);
+            setPendingRequestsCount(data.requests.length);
+          }
+        }
+      } catch (error) {
+        console.error('[Header] Failed to fetch pending requests:', error);
+      }
+    };
 
     const checkSession = async () => {
       try {
@@ -32,6 +55,11 @@ export const Header = ({ className }: { className?: string }) => {
 
         if (isMounted) {
           setIsAuthenticated(response.ok);
+          
+          // If authenticated, fetch pending requests count
+          if (response.ok) {
+            fetchPendingRequestsCount(baseUrl);
+          }
         }
       } catch (error) {
         if (isMounted) {
@@ -42,8 +70,17 @@ export const Header = ({ className }: { className?: string }) => {
 
     checkSession();
 
+    // Poll for updates every 30 seconds
+    const interval = setInterval(() => {
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      fetchPendingRequestsCount(baseUrl);
+    }, 30000);
+
     return () => {
       isMounted = false;
+      clearInterval(interval);
     };
   }, []);
 
@@ -120,20 +157,37 @@ export const Header = ({ className }: { className?: string }) => {
         <div className="relative" ref={accountDropdownRef}>
           <button
             onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 rounded-full bg-primary-50 hover:bg-primary-100 dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 rounded-full bg-primary-50 hover:bg-primary-100 dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition relative"
           >
             <UserIcon className="h-4 w-4" />
             My account
+            {pendingRequestsCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold shadow-lg">
+                {pendingRequestsCount}
+              </span>
+            )}
           </button>
 
           {accountDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/30 bg-white/95 shadow-lg backdrop-blur-sm dark:border-slate-200/10 dark:bg-slate-900/95 z-50">
               <Link
-                href="/dashboard"
+                href="/profile"
                 onClick={() => setAccountDropdownOpen(false)}
                 className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 rounded-t-xl"
               >
                 Profile
+              </Link>
+              <Link
+                href="/contacts"
+                onClick={() => setAccountDropdownOpen(false)}
+                className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10 relative"
+              >
+                Contacts
+                {pendingRequestsCount > 0 && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold">
+                    {pendingRequestsCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/dashboard?section=messages"

@@ -27,10 +27,33 @@ export function DashboardNav({ links }: DashboardNavProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [selectedSection, setSelectedSection] = useState('discover');
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted = true;
+
+    const fetchPendingRequestsCount = async (baseUrl: string) => {
+      try {
+        console.log('[DashboardNav] Fetching pending requests from:', `${baseUrl}/api/friends/requests`);
+        const response = await fetch(`${baseUrl}/api/friends/requests`, {
+          credentials: 'include',
+        });
+        
+        console.log('[DashboardNav] Response status:', response.status, response.ok);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[DashboardNav] Response data:', data);
+          if (isMounted) {
+            console.log('[DashboardNav] Setting pending requests count to:', data.requests.length);
+            setPendingRequestsCount(data.requests.length);
+          }
+        }
+      } catch (error) {
+        console.error('[DashboardNav] Failed to fetch pending requests:', error);
+      }
+    };
 
     const checkSession = async () => {
       try {
@@ -45,6 +68,11 @@ export function DashboardNav({ links }: DashboardNavProps) {
 
         if (isMounted) {
           setIsAuthenticated(response.ok);
+          
+          // If authenticated, fetch pending requests count
+          if (response.ok) {
+            fetchPendingRequestsCount(baseUrl);
+          }
         }
       } catch {
         if (isMounted) {
@@ -55,12 +83,27 @@ export function DashboardNav({ links }: DashboardNavProps) {
 
     checkSession();
 
+    // Poll for updates every 30 seconds
+    const interval = setInterval(() => {
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      fetchPendingRequestsCount(baseUrl);
+    }, 30000);
+
     return () => {
       isMounted = false;
+      clearInterval(interval);
     };
   }, []);
 
   useEffect(() => {
+    if (pathname === dashboardPath) {
+      const section = new URLSearchParams(window.location.search).get('section');
+      setSelectedSection(section ?? 'profile');
+      return;
+    }
+
     if (pathname !== '/work-in-progress') {
       setSelectedSection('discover');
       return;
@@ -84,14 +127,15 @@ export function DashboardNav({ links }: DashboardNavProps) {
   }, [accountDropdownOpen]);
 
   const workInProgressPath = '/work-in-progress';
-  const accountHref = isAuthenticated ? '/dashboard' : '/login';
+  const dashboardPath = '/';
+  const accountHref = isAuthenticated ? dashboardPath : '/login';
   const accountLabel = isAuthenticated ? 'My account' : 'Sign in';
 
   const normalize = (value: string) => value.toLowerCase().replace(/\s+/g, '-');
 
   const getLinkHref = (link: string) => {
     if (normalize(link) === 'discover') {
-      return '/dashboard';
+      return dashboardPath;
     }
 
     if (link === 'Blog') {
@@ -106,12 +150,12 @@ export function DashboardNav({ links }: DashboardNavProps) {
       return pathname === '/blog';
     }
 
-    if (pathname === workInProgressPath) {
-      return normalize(link) === selectedSection;
+    if (normalize(link) === 'discover') {
+      return pathname === dashboardPath;
     }
 
-    if (pathname === '/' || pathname === '/dashboard') {
-      return normalize(link) === 'discover';
+    if (pathname === workInProgressPath) {
+      return normalize(link) === selectedSection;
     }
 
     return false;
@@ -145,7 +189,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
   return (
     <header className="ll-dashboard-nav sticky top-0 z-50 w-full border-b border-white/20 bg-white/90 transition-colors dark:border-slate-200/10 dark:bg-slate-950/85">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-6 lg:px-8">
-        <Link href="/dashboard" className="flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+        <Link href="/" className="flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
           <div className="relative h-10 w-10 overflow-hidden rounded-xl p-1">
             <Image
               src="/static/images/logo.png"
@@ -199,16 +243,21 @@ export function DashboardNav({ links }: DashboardNavProps) {
             <div className="relative hidden md:block" ref={accountDropdownRef}>
               <button
                 onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                className="h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 inline-flex"
+                className="h-11 items-center gap-2 rounded-full bg-primary-500 px-4 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 inline-flex relative"
               >
                 <UserIcon className="h-4 w-4" />
                 My account
+                {pendingRequestsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold shadow-lg">
+                    {pendingRequestsCount}
+                  </span>
+                )}
               </button>
 
               {accountDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/30 bg-white/95 shadow-lg backdrop-blur-sm dark:border-slate-200/10 dark:bg-slate-900/95 z-50">
                   <Link
-                    href="/dashboard"
+                    href="/profile"
                     onClick={() => setAccountDropdownOpen(false)}
                     className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 rounded-t-xl first:rounded-t-xl"
                   >
@@ -220,6 +269,18 @@ export function DashboardNav({ links }: DashboardNavProps) {
                     className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10"
                   >
                     Messages
+                  </Link>
+                  <Link
+                    href="/contacts"
+                    onClick={() => setAccountDropdownOpen(false)}
+                    className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10 relative"
+                  >
+                    Contacts
+                    {pendingRequestsCount > 0 && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold">
+                        {pendingRequestsCount}
+                      </span>
+                    )}
                   </Link>
                   <button
                     type="button"
@@ -273,7 +334,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
             {isAuthenticated ? (
               <>
                 <Link
-                  href="/dashboard"
+                  href="/profile"
                   onClick={() => setOpen(false)}
                   className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-primary-50 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
