@@ -11,9 +11,9 @@ const updateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
   location: z.string().max(100).optional(),
   phone: z.string().optional(),
-  website: z.string().url().optional(),
+  website: z.string().url().optional().or(z.literal('')),
   gender: z.enum(['male', 'female', 'other', 'prefer-not-to-say']).optional(),
-  dateOfBirth: z.string().datetime().optional(),
+  dateOfBirth: z.string().datetime().optional().or(z.literal('')),
 });
 
 export async function GET(request: NextRequest) {
@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest) {
         { 
           ok: false, 
           error: 'Invalid request body.',
-          details: parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+          details: parsed.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
         },
         { status: 400 },
       );
@@ -97,10 +97,21 @@ export async function PUT(request: NextRequest) {
 
     await connectToDatabase();
 
-    const updateData = {
-      ...parsed.data,
+    console.log('[PROFILE PUT] Request body:', body);
+    console.log('[PROFILE PUT] Parsed data:', parsed.data);
+
+    // Remove empty strings and undefined values
+    const updateData: Record<string, unknown> = {
       bio_updated_at: new Date(),
     };
+
+    Object.entries(parsed.data).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        updateData[key] = value;
+      }
+    });
+
+    console.log('[PROFILE PUT] Final update data:', updateData);
 
     const user = await UserModel.findByIdAndUpdate(
       payload.sub,

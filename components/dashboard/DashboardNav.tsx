@@ -28,6 +28,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
   const [selectedSection, setSelectedSection] = useState('discover');
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +57,23 @@ export function DashboardNav({ links }: DashboardNavProps) {
       }
     };
 
+    const fetchUnreadMessagesCount = async (baseUrl: string) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/messages/unread`, {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (isMounted) {
+            setUnreadMessagesCount(data.unreadCount || 0);
+          }
+        }
+      } catch (error) {
+        console.error('[DashboardNav] Failed to fetch unread messages:', error);
+      }
+    };
+
     const checkSession = async () => {
       try {
         const baseUrl = typeof window !== 'undefined' 
@@ -80,6 +98,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
               });
             }
             fetchPendingRequestsCount(baseUrl);
+            fetchUnreadMessagesCount(baseUrl);
           }
         }
       } catch {
@@ -98,6 +117,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
         ? window.location.origin 
         : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       fetchPendingRequestsCount(baseUrl);
+      fetchUnreadMessagesCount(baseUrl);
     }, 30000);
 
     return () => {
@@ -292,9 +312,14 @@ export function DashboardNav({ links }: DashboardNavProps) {
                   <Link
                     href="/dashboard?section=messages"
                     onClick={() => setAccountDropdownOpen(false)}
-                    className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10"
+                    className="relative block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10"
                   >
                     Messages
+                    {unreadMessagesCount > 0 && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold">
+                        {unreadMessagesCount}
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/contacts"
@@ -369,9 +394,14 @@ export function DashboardNav({ links }: DashboardNavProps) {
                 <Link
                   href="/dashboard?section=messages"
                   onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-primary-50 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800"
+                  className="relative block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-primary-50 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   Messages
+                  {unreadMessagesCount > 0 && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold">
+                      {unreadMessagesCount}
+                    </span>
+                  )}
                 </Link>
                 <button
                   type="button"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -13,8 +14,16 @@ import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 import { Alert, AlertDescription } from '@/components/shared/ui/alert';
 import { ScrollArea } from '@/components/shared/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/shared/ui/dropdown-menu';
 import Image from 'next/image';
-import { SendIcon, LoaderIcon } from 'lucide-react';
+import { SendIcon, LoaderIcon, PlusIcon, UserIcon, Check, CheckCheck } from 'lucide-react';
 
 interface Conversation {
   id: string;
@@ -27,6 +36,13 @@ interface Conversation {
   unreadCount: number;
 }
 
+interface Friend {
+  _id: string;
+  name: string;
+  avatarUrl?: string;
+  location?: string;
+}
+
 interface Message {
   id: string;
   senderId: string;
@@ -37,7 +53,11 @@ interface Message {
 }
 
 export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
+  const searchParams = useSearchParams();
+  const contactIdFromUrl = searchParams.get('contact');
+  
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -45,19 +65,66 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(0);
 
   useEffect(() => {
     fetchConversations();
+    fetchFriends();
   }, []);
 
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.id);
+      // Reset message count when switching conversations to allow initial scroll
+      prevMessageCountRef.current = 0;
     }
   }, [selectedConversation]);
 
+  // Handle contact query parameter
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (contactIdFromUrl && conversations.length > 0) {
+      const conversation = conversations.find(c => c.id === contactIdFromUrl);
+      if (conversation) {
+        setSelectedConversation(conversation);
+      } else {
+        // Start new conversation with this contact
+        startNewConversation(contactIdFromUrl);
+      }
+    }
+  }, [contactIdFromUrl, conversations]);
+
+  // Poll for conversation updates
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchConversations();
+    }, 30000); // Poll every 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [contactIdFromUrl]);
+
+  // Poll for new messages in active conversation
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    const intervalId = setInterval(() => {
+      fetchMessages(selectedConversation.id);
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [selectedConversation]);
+
+  // Only scroll when new messages are added, not on every update
+  useEffect(() => {
+    const currentCount = messages.length;
+    const prevCount = prevMessageCountRef.current;
+
+    // Scroll only if there are more messages than before
+    if (currentCount > prevCount && currentCount > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Update the ref for next comparison
+    prevMessageCountRef.current = currentCount;
   }, [messages]);
 
   const fetchConversations = async () => {
@@ -81,7 +148,7 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
       const data = await response.json();
       setConversations(data.conversations || []);
 
-      if (data.conversations?.length > 0) {
+      if (data.conversations?.length > 0 && !contactIdFromUrl) {
         setSelectedConversation(data.conversations[0]);
       }
     } catch (err) {
@@ -91,6 +158,76 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     }
   };
 
+  const startNewConversation = async (contactId: string) => {
+    try {
+      setError('');
+
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      // Fetch the contact's info
+      const response = await fetch(`${baseUrl}/api/contacts`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contact');
+      }
+
+      const data = await response.json();
+      const contact = data.contacts?.find((c: any) => c._id === contactId);
+
+      if (!contact) {
+        setError('Contact not found');
+        return;
+      }
+
+      // Create a placeholder conversation
+      const newConversation: Conversation = {
+        id: contact._id,
+        name: contact.name,
+        avatarUrl: contact.avatarUrl,
+        lastMessage: {
+          content: '',
+          createdAt: new Date().toISOString(),
+        },
+        unreadCount: 0,
+      };
+
+      setSelectedConversation(newConversation);
+      setMessages([]);
+      
+      // Add to conversations list if not already there
+      if (!conversations.find(c => c.id === contactId)) {
+        setConversations(prev => [newConversation, ...prev]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start conversation');
+    }
+  };
+  const fetchFriends = async () => {
+    try {
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${baseUrl}/api/contacts`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch friends');
+      }
+
+      const data = await response.json();
+      setFriends(data.contacts || []);
+    } catch (err) {
+      console.error('Failed to load friends:', err);
+    }
+  };
   const fetchMessages = async (userId: string) => {
     try {
       setError('');
@@ -180,8 +317,61 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
       {/* Conversations List */}
       <Card className="lg:col-span-1">
         <CardHeader>
-          <CardTitle className="text-lg">Conversations</CardTitle>
-          <CardDescription>{conversations.length} conversations</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Conversations</CardTitle>
+              <CardDescription>{conversations.length} conversations</CardDescription>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <PlusIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Start New Conversation</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <ScrollArea className="h-64">
+                  {friends.length === 0 ? (
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                      No friends available
+                    </div>
+                  ) : (
+                    friends.map((friend) => (
+                      <DropdownMenuItem
+                        key={friend._id}
+                        onClick={() => startNewConversation(friend._id)}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          {friend.avatarUrl ? (
+                            <div className="relative h-8 w-8 flex-shrink-0">
+                              <Image
+                                src={friend.avatarUrl}
+                                alt={friend.name}
+                                fill
+                                className="rounded-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                              <UserIcon className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 truncate">
+                            <p className="text-sm font-medium truncate">{friend.name}</p>
+                            {friend.location && (
+                              <p className="text-xs text-gray-500 truncate">{friend.location}</p>
+                            )}
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                    ))
+                  )}
+                </ScrollArea>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="h-[520px]">
@@ -288,15 +478,26 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
                             }`}
                           >
                             <p className="text-sm break-words">{message.content}</p>
-                            <p
-                              className={`text-xs mt-1 ${
+                            <div
+                              className={`flex items-center justify-between gap-2 mt-1 ${
                                 message.senderId === currentUserId
                                   ? 'text-primary-100'
                                   : 'text-gray-500'
                               }`}
                             >
-                              {new Date(message.createdAt).toLocaleTimeString()}
-                            </p>
+                              <p className="text-xs">
+                                {new Date(message.createdAt).toLocaleTimeString()}
+                              </p>
+                              {message.senderId === currentUserId && (
+                                <span className="text-xs flex items-center gap-0.5">
+                                  {message.isRead ? (
+                                    <CheckCheck className="h-3 w-3" />
+                                  ) : (
+                                    <Check className="h-3 w-3" />
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))

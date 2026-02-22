@@ -14,6 +14,7 @@ export const Header = ({ className }: { className?: string }) => {
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const router = useRouter();
   const accountDropdownRef = useRef<HTMLDivElement>(null);
@@ -43,6 +44,23 @@ export const Header = ({ className }: { className?: string }) => {
       }
     };
 
+    const fetchUnreadMessagesCount = async (baseUrl: string) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/messages/unread`, {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (isMounted) {
+            setUnreadMessagesCount(data.unreadCount || 0);
+          }
+        }
+      } catch (error) {
+        console.error('[Header] Failed to fetch unread messages:', error);
+      }
+    };
+
     const checkSession = async () => {
       try {
         const baseUrl = typeof window !== 'undefined' 
@@ -67,6 +85,7 @@ export const Header = ({ className }: { className?: string }) => {
               });
             }
             fetchPendingRequestsCount(baseUrl);
+            fetchUnreadMessagesCount(baseUrl);
           }
         }
       } catch (error) {
@@ -85,6 +104,7 @@ export const Header = ({ className }: { className?: string }) => {
         ? window.location.origin 
         : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       fetchPendingRequestsCount(baseUrl);
+      fetchUnreadMessagesCount(baseUrl);
     }, 30000);
 
     return () => {
@@ -218,9 +238,14 @@ export const Header = ({ className }: { className?: string }) => {
               <Link
                 href="/dashboard?section=messages"
                 onClick={() => setAccountDropdownOpen(false)}
-                className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10"
+                className="relative block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 border-t border-white/20 dark:border-slate-200/10"
               >
                 Messages
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold">
+                    {unreadMessagesCount}
+                  </span>
+                )}
               </Link>
               <button
                 type="button"
