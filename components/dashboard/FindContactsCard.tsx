@@ -186,6 +186,28 @@ export function FindContactsCard({ onFriendAdded }: FindContactsCardProps) {
     }
   };
 
+  const cancelOutgoingRequest = async (requestId: string) => {
+    try {
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${baseUrl}/api/friends/request/${requestId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) throw new Error('Failed to cancel request');
+
+      setOutgoingRequests(outgoingRequests.filter(r => r.id !== requestId));
+      setSuccessMessage('Friend request canceled!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel request');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
   return (
     <Card className="w-full bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border-white/30 dark:border-slate-200/10">
       <CardHeader>
@@ -397,9 +419,15 @@ export function FindContactsCard({ onFriendAdded }: FindContactsCardProps) {
                               )}
                             </div>
                           </div>
-                          <div className="text-xs font-medium text-blue-600 dark:text-blue-400 px-2 py-1 bg-blue-100/50 dark:bg-blue-900/30 rounded">
-                            Pending
-                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => cancelOutgoingRequest(request.id)}
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <XIcon className="h-4 w-4 mr-1" />
+                            Cancel
+                          </Button>
                         </div>
                       ))}
                     </div>

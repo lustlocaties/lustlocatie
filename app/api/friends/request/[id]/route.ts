@@ -95,3 +95,69 @@ export async function PUT(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const payload = await verifyAuthToken(token);
+
+    if (!payload.sub || typeof payload.sub !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid session' },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+
+    const { id } = await params;
+    const friendRequest = await FriendRequestModel.findById(id);
+
+    if (!friendRequest) {
+      return NextResponse.json(
+        { error: 'Friend request not found' },
+        { status: 404 }
+      );
+    }
+
+    // Verify current user is the sender
+    if (String(friendRequest.senderId) !== payload.sub) {
+      return NextResponse.json(
+        { error: 'Unauthorized - only the sender can cancel this request' },
+        { status: 403 }
+      );
+    }
+
+    // Only allow canceling pending requests
+    if (friendRequest.status !== 'pending') {
+      return NextResponse.json(
+        { error: 'Can only cancel pending requests' },
+        { status: 400 }
+      );
+    }
+
+    await FriendRequestModel.findByIdAndDelete(id);
+
+    return NextResponse.json({
+      ok: true,
+      message: 'Friend request canceled',
+    });
+  } catch (error) {
+    console.error('[DELETE_FRIEND_REQUEST]', error);
+    return NextResponse.json(
+      { error: 'Failed to cancel friend request' },
+      { status: 500 }
+    );
+  }
+}
