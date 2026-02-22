@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/shared/ui/card';
-import { ContactCard } from './ContactCard';
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 import { Alert, AlertDescription } from '@/components/shared/ui/alert';
@@ -63,9 +62,11 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [isRefreshingMessages, setIsRefreshingMessages] = useState(false);
   const [error, setError] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const prevMessageCountRef = useRef(0);
+  const messageScrollAreaRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToBottomRef = useRef(false);
+  const lastConversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetchConversations();
@@ -75,8 +76,14 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.id);
-      // Reset message count when switching conversations to allow initial scroll
-      prevMessageCountRef.current = 0;
+    }
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    if (!selectedConversation?.id) return;
+    if (lastConversationIdRef.current !== selectedConversation.id) {
+      lastConversationIdRef.current = selectedConversation.id;
+      shouldScrollToBottomRef.current = true;
     }
   }, [selectedConversation]);
 
@@ -93,10 +100,23 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     }
   }, [contactIdFromUrl, conversations]);
 
+  useEffect(() => {
+    if (!shouldScrollToBottomRef.current) return;
+    const root = messageScrollAreaRef.current;
+    if (!root) return;
+    const viewport = root.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+    if (!viewport) return;
+
+    requestAnimationFrame(() => {
+      viewport.scrollTop = viewport.scrollHeight;
+      shouldScrollToBottomRef.current = false;
+    });
+  }, [messages]);
+
   // Poll for conversation updates
   useEffect(() => {
     const intervalId = setInterval(() => {
-      fetchConversations();
+      fetchConversations(true); // Pass true to indicate this is a background poll
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(intervalId);
@@ -107,29 +127,17 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
     if (!selectedConversation) return;
 
     const intervalId = setInterval(() => {
-      fetchMessages(selectedConversation.id);
-    }, 5000); // Poll every 5 seconds
+      fetchMessages(selectedConversation.id, true); // Pass true to indicate this is a background poll
+    }, 10000); // Poll every 10 seconds
 
     return () => clearInterval(intervalId);
   }, [selectedConversation]);
 
-  // Only scroll when new messages are added, not on every update
-  useEffect(() => {
-    const currentCount = messages.length;
-    const prevCount = prevMessageCountRef.current;
-
-    // Scroll only if there are more messages than before
-    if (currentCount > prevCount && currentCount > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Update the ref for next comparison
-    prevMessageCountRef.current = currentCount;
-  }, [messages]);
-
-  const fetchConversations = async () => {
+  const fetchConversations = async (isBackgroundPoll = false) => {
     try {
-      setIsLoading(true);
+      if (!isBackgroundPoll) {
+        setIsLoading(true);
+      }
       setError('');
 
       const baseUrl = typeof window !== 'undefined'
@@ -146,15 +154,34 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
       }
 
       const data = await response.json();
-      setConversations(data.conversations || []);
+      const newConversations = data.conversations || [];
+      
+      // Only update state if conversations actually changed - use a more robust comparison
+      setConversations(prev => {
+        if (prev.length !== newConversations.length) return newConversations;
+        
+        // Compare each conversation's essential properties
+        const hasChanged = prev.some((conv, idx) => {
+          const newConv = newConversations[idx];
+          return !newConv || 
+                 conv.id !== newConv.id ||
+                 conv.name !== newConv.name ||
+                 conv.lastMessage?.content !== newConv.lastMessage?.content ||
+                 conv.unreadCount !== newConv.unreadCount;
+        });
+        
+        return hasChanged ? newConversations : prev;
+      });
 
-      if (data.conversations?.length > 0 && !contactIdFromUrl) {
-        setSelectedConversation(data.conversations[0]);
+      if (newConversations.length > 0 && !contactIdFromUrl && !selectedConversation) {
+        setSelectedConversation(newConversations[0]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load conversations');
     } finally {
-      setIsLoading(false);
+      if (!isBackgroundPoll) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -228,9 +255,12 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
       console.error('Failed to load friends:', err);
     }
   };
-  const fetchMessages = async (userId: string) => {
+  const fetchMessages = async (userId: string, isBackgroundPoll = false) => {
     try {
       setError('');
+      if (isBackgroundPoll) {
+        setIsRefreshingMessages(true);
+      }
 
       const baseUrl = typeof window !== 'undefined'
         ? window.location.origin
@@ -246,9 +276,32 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
       }
 
       const data = await response.json();
-      setMessages(data.messages || []);
+      const newMessages = data.messages || [];
+      
+      // Only update state if messages actually changed - use more robust comparison
+      setMessages(prev => {
+        if (prev.length !== newMessages.length) return newMessages;
+        
+        // Compare message IDs and read status
+        const hasChanged = prev.some((msg, idx) => {
+          const newMsg = newMessages[idx];
+          return !newMsg || 
+                 msg.id !== newMsg.id ||
+                 msg.content !== newMsg.content ||
+                 msg.isRead !== newMsg.isRead;
+        });
+        
+        return hasChanged ? newMessages : prev;
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      // Only show errors on initial fetch, not on background polls
+      if (!isBackgroundPoll) {
+        setError(err instanceof Error ? err.message : 'Failed to load messages');
+      }
+    } finally {
+      if (isBackgroundPoll) {
+        setIsRefreshingMessages(false);
+      }
     }
   };
 
@@ -285,8 +338,8 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
       setMessages((prev) => [...prev, data.message]);
       setNewMessage('');
 
-      // Refresh conversations to update last message
-      await fetchConversations();
+      // Refresh conversations to update last message (as background update)
+      await fetchConversations(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
@@ -311,11 +364,13 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
   }
 
   return (
-    <div className="w-[100vw]">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 space-y-6">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
+    <div className="w-full">
+      <div
+        className="w-full grid grid-cols-1 lg:grid-cols-4 gap-4 items-stretch auto-rows-fr"
+        style={{ height: '80vh', maxHeight: '800px' }}
+      >
       {/* Conversations List */}
-      <Card className="lg:col-span-1">
+      <Card className="lg:col-span-1 h-full min-h-0 flex flex-col">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -351,6 +406,7 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
                                 alt={friend.name}
                                 fill
                                 className="rounded-full object-cover"
+                                loading="lazy"
                               />
                             </div>
                           ) : (
@@ -373,15 +429,15 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
             </DropdownMenu>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea className="h-[520px]">
-            {conversations.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                <p>No conversations yet</p>
-              </div>
-            ) : (
-              <div className="space-y-1 p-4">
-                {conversations.map((conversation) => (
+        <CardContent className="p-0 flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+          <div className="flex-1 min-h-0 h-full overflow-hidden">
+            <ScrollArea className="h-full w-full" type="always">
+              {conversations.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  <p>No conversations yet</p>
+                </div>
+              ) : (
+                <div className="space-y-1 p-4">{conversations.map((conversation) => (
                   <button
                     key={conversation.id}
                     onClick={() => setSelectedConversation(conversation)}
@@ -399,6 +455,7 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
                             alt={conversation.name}
                             fill
                             className="rounded-full object-cover"
+                            loading="lazy"
                           />
                         </div>
                       )}
@@ -421,47 +478,56 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
               </div>
             )}
           </ScrollArea>
+          </div>
         </CardContent>
       </Card>
 
       {/* Message View */}
-      <Card className="lg:col-span-2">
+      <Card className="lg:col-span-3 h-full min-h-0 flex flex-col">
         {selectedConversation ? (
           <>
             <CardHeader>
-              <div className="flex items-center gap-3">
-                {selectedConversation.avatarUrl && (
-                  <div className="relative h-10 w-10">
-                    <Image
-                      src={selectedConversation.avatarUrl}
-                      alt={selectedConversation.name}
-                      fill
-                      className="rounded-full object-cover"
-                    />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {selectedConversation.avatarUrl && (
+                    <div className="relative h-10 w-10">
+                      <Image
+                        src={selectedConversation.avatarUrl}
+                        alt={selectedConversation.name}
+                        fill
+                        className="rounded-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <CardTitle className="text-lg">{selectedConversation.name}</CardTitle>
+                  </div>
+                </div>
+                {isRefreshingMessages && (
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <LoaderIcon className="h-3 w-3 animate-spin" />
+                    Refreshing
                   </div>
                 )}
-                <div>
-                  <CardTitle className="text-lg">{selectedConversation.name}</CardTitle>
-                </div>
               </div>
             </CardHeader>
 
-            <CardContent className="p-0">
-              <div className="flex flex-col h-[480px]">
-                {error && (
-                  <Alert variant="destructive" className="m-4">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
+            <CardContent className="p-0 flex flex-col flex-1 min-h-0 h-full overflow-hidden">
+              {error && (
+                <Alert variant="destructive" className="m-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-                <ScrollArea className="flex-1 p-4">
-                  <div className="space-y-4">
-                    {messages.length === 0 ? (
-                      <div className="text-center text-gray-500 py-8">
-                        <p>No messages yet. Start the conversation!</p>
-                      </div>
-                    ) : (
-                      messages.map((message) => (
+              <div className="flex-1 min-h-0 h-full overflow-hidden">
+                <ScrollArea ref={messageScrollAreaRef} className="h-full w-full" type="always">
+                  <div className="p-4 space-y-4">{messages.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      <p>No messages yet. Start the conversation!</p>
+                    </div>
+                  ) : (
+                    messages.map((message) => (
                         <div
                           key={message.id}
                           className={`flex ${
@@ -502,12 +568,12 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
                         </div>
                       ))
                     )}
-                    <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
+              </div>
 
-                {/* Message Input */}
-                <div className="border-t p-4">
+              {/* Message Input */}
+              <div className="border-t p-4 flex-shrink-0">
                   <div className="flex gap-2">
                     <Input
                       value={newMessage}
@@ -535,7 +601,6 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
                     </Button>
                   </div>
                 </div>
-              </div>
             </CardContent>
           </>
         ) : (
@@ -545,8 +610,6 @@ export function MessagesPage({ currentUserId }: { currentUserId?: string }) {
         )}
       </Card>
         </div>
-        <ContactCard />
-      </div>
     </div>
   );
 }
