@@ -84,8 +84,13 @@ export async function PUT(request: NextRequest) {
     const parsed = updateProfileSchema.safeParse(body);
 
     if (!parsed.success) {
+      console.error('[PROFILE PUT] Validation error:', parsed.error);
       return NextResponse.json(
-        { ok: false, error: 'Invalid request body.' },
+        { 
+          ok: false, 
+          error: 'Invalid request body.',
+          details: parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+        },
         { status: 400 },
       );
     }

@@ -14,6 +14,7 @@ export const Header = ({ className }: { className?: string }) => {
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const router = useRouter();
   const accountDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,14 +57,22 @@ export const Header = ({ className }: { className?: string }) => {
         if (isMounted) {
           setIsAuthenticated(response.ok);
           
-          // If authenticated, fetch pending requests count
+          // If authenticated, fetch user data and pending requests count
           if (response.ok) {
+            const data = await response.json();
+            if (data.user) {
+              setCurrentUser({
+                name: data.user.name,
+                email: data.user.email,
+              });
+            }
             fetchPendingRequestsCount(baseUrl);
           }
         }
       } catch (error) {
         if (isMounted) {
           setIsAuthenticated(false);
+          setCurrentUser(null);
         }
       }
     };
@@ -117,6 +126,7 @@ export const Header = ({ className }: { className?: string }) => {
         credentials: 'include',
       });
       setIsAuthenticated(false);
+      setCurrentUser(null);
       setAccountDropdownOpen(false);
       router.push('/');
       router.refresh();
@@ -159,7 +169,13 @@ export const Header = ({ className }: { className?: string }) => {
             onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 rounded-full bg-primary-50 hover:bg-primary-100 dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition relative"
           >
-            <UserIcon className="h-4 w-4" />
+            {currentUser ? (
+              <div className="h-6 w-6 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-semibold">
+                {currentUser.name.charAt(0).toUpperCase()}
+              </div>
+            ) : (
+              <UserIcon className="h-4 w-4" />
+            )}
             My account
             {pendingRequestsCount > 0 && (
               <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold shadow-lg">
@@ -169,11 +185,21 @@ export const Header = ({ className }: { className?: string }) => {
           </button>
 
           {accountDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/30 bg-white/95 shadow-lg backdrop-blur-sm dark:border-slate-200/10 dark:bg-slate-900/95 z-50">
+            <div className="absolute right-0 mt-2 w-56 rounded-xl border border-white/30 bg-white/95 shadow-lg backdrop-blur-sm dark:border-slate-200/10 dark:bg-slate-900/95 z-50">
+              {currentUser && (
+                <div className="px-4 py-3 border-b border-white/20 dark:border-slate-200/10 bg-slate-50/50 dark:bg-slate-800/50">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                    {currentUser.name}
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                    {currentUser.email}
+                  </p>
+                </div>
+              )}
               <Link
                 href="/profile"
                 onClick={() => setAccountDropdownOpen(false)}
-                className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800 rounded-t-xl"
+                className="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-600 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 Profile
               </Link>
