@@ -16,13 +16,16 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log('[REGISTER] Request body:', body);
+    
     const parsed = registerSchema.safeParse(body);
 
     if (!parsed.success) {
+      console.log('[REGISTER] Validation failed:', parsed.error);
       return NextResponse.json(
         {
           ok: false,
-          error: 'Invalid request body.',
+          error: 'Invalid request body: ' + JSON.stringify(parsed.error.flatten()),
         },
         { status: 400 },
       );
@@ -32,10 +35,13 @@ export async function POST(request: Request) {
     const email = parsed.data.email.toLowerCase().trim();
     const password = parsed.data.password;
 
+    console.log('[REGISTER] Connecting to database...');
     await connectToDatabase();
+    console.log('[REGISTER] Database connected');
 
     const existingUser = await UserModel.findOne({ email }).lean();
     if (existingUser) {
+      console.log('[REGISTER] User already exists:', email);
       return NextResponse.json(
         {
           ok: false,
@@ -45,8 +51,10 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log('[REGISTER] Hashing password...');
     const passwordHash = await hashPassword(password);
 
+    console.log('[REGISTER] Creating user...');
     const user = await UserModel.create({
       name,
       email,
@@ -54,6 +62,7 @@ export async function POST(request: Request) {
       role: 'user',
       isActive: true,
     });
+    console.log('[REGISTER] User created:', user._id);
 
     const token = await signAuthToken({
       sub: user._id.toString(),
@@ -85,11 +94,13 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    console.error('[REGISTER] Error:', error instanceof Error ? error.message : String(error));
+    console.error('[REGISTER] Full error:', error);
     return NextResponse.json(
       {
         ok: false,
-        error: 'Registration failed.',
+        error: error instanceof Error ? error.message : 'Registration failed.',
       },
       { status: 500 },
     );
