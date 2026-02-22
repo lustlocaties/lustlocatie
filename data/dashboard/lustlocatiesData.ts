@@ -29,7 +29,7 @@ export type TrustBadge = {
   label: string;
 };
 
-export const navLinks = ['Discover', 'Map', 'Favorites', 'Support'];
+export const navLinks = ['Discover', 'Map', 'Favorites', 'Blog', 'Support'];
 
 export const stayTags: StayTag[] = [
   'Discreet Entry',

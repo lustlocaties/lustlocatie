@@ -38,7 +38,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
           {links.map((link, index) => (
             <Link
               key={link}
-              href={workInProgressPath}
+              href={link === 'Blog' ? '/blog' : workInProgressPath}
               className={`text-sm font-medium transition-colors duration-300 hover:text-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent dark:focus-visible:ring-offset-slate-950 ${
                 index === 0
                   ? 'text-primary-500 underline decoration-primary-500 underline-offset-8'
@@ -87,7 +87,7 @@ export function DashboardNav({ links }: DashboardNavProps) {
             {links.map((link) => (
               <Link
                 key={link}
-                href={workInProgressPath}
+                href={link === 'Blog' ? '/blog' : workInProgressPath}
                 className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-primary-50 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 {link}
