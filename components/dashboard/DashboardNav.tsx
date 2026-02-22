@@ -1,14 +1,15 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   HeartIcon,
   MenuIcon,
   SearchIcon,
-  ShieldCheckIcon,
   XIcon,
 } from 'lucide-react';
+import BrandThemeToggle from '@/components/shared/BrandThemeToggle';
 import { ThemeSwitch } from '@/components/shared/ThemeSwitch';
 
 type DashboardNavProps = {
@@ -20,11 +21,18 @@ export function DashboardNav({ links }: DashboardNavProps) {
   const workInProgressPath = '/work-in-progress';
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/70 backdrop-blur-xl transition-colors dark:border-slate-200/10 dark:bg-slate-950/60">
+    <header className="ll-dashboard-nav sticky top-0 z-50 w-full border-b border-white/20 bg-white/90 transition-colors dark:border-slate-200/10 dark:bg-slate-950/85">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500 text-white shadow-lg shadow-primary-500/30">
-            <ShieldCheckIcon className="h-5 w-5" />
+          <div className="relative h-10 w-10 overflow-hidden rounded-xl p-1">
+            <Image
+              src="/static/images/logo.png"
+              alt="Lustlocaties logo"
+              fill
+              sizes="40px"
+              className="object-contain"
+              priority
+            />
           </div>
           <div>
             <p className="font-display text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -59,6 +67,8 @@ export function DashboardNav({ links }: DashboardNavProps) {
             <SearchIcon className="h-4 w-4" />
           </Link>
 
+          <BrandThemeToggle className="hidden md:inline-flex" />
+
           <div className="rounded-full border border-white/30 bg-white/40 p-2 text-slate-700 dark:border-slate-200/10 dark:bg-slate-900/50 dark:text-slate-100">
             <ThemeSwitch />
           </div>
@@ -83,7 +93,9 @@ export function DashboardNav({ links }: DashboardNavProps) {
 
       {open ? (
         <div className="border-t border-white/20 px-4 pb-4 md:hidden dark:border-slate-200/10">
-          <div className="space-y-3 rounded-2xl border border-white/25 bg-white/50 p-4 backdrop-blur-xl dark:border-slate-200/10 dark:bg-slate-900/60">
+          <div className="space-y-3 rounded-2xl border border-white/25 bg-white/60 p-4 backdrop-blur-sm dark:border-slate-200/10 dark:bg-slate-900/70">
+            <BrandThemeToggle className="w-full" />
+
             {links.map((link) => (
               <Link
                 key={link}

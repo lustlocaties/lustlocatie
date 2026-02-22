@@ -15,14 +15,15 @@ import {
 
 export function LustlocatiesLandingPage() {
   return (
-    <div className="relative w-full overflow-hidden bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
+    <div className="ll-dashboard relative w-full overflow-hidden bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <div className="pointer-events-none absolute inset-0">
         <Image
           src="/static/images/backdrop-8.webp"
           alt="Luxury hotel background"
           fill
           priority
-          className="object-cover blur-sm"
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-100/90 via-slate-100/80 to-slate-100/95 dark:from-slate-950/90 dark:via-slate-950/80 dark:to-slate-950/95" />
       </div>
@@ -30,7 +31,7 @@ export function LustlocatiesLandingPage() {
       <div className="relative z-10 min-h-screen">
         <DashboardNav links={navLinks} />
 
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-6 md:py-8 lg:gap-8 lg:px-8">
+        <div className="ll-dashboard-shell mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-6 md:py-8 lg:gap-8 lg:px-8">
           <HeroSection />
           <SearchBar />
 

@@ -1,5 +1,6 @@
 export { ActiveLink } from './ActiveLink';
 export { AnalyticsWrapper } from './Analytics';
+export { BrandThemeToggle } from './BrandThemeToggle';
 export { Footer } from './Footer';
 export { FooterSupportButton } from './FooterSupportButton';
 export { Header } from './Header';

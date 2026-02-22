@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { MenuIcon, OrbitIcon } from 'lucide-react';
+import Image from 'next/image';
+import { MenuIcon } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
 import {
   Sheet,
@@ -53,10 +54,18 @@ export const LandingHeader = ({
           <div className="flex items-center gap-3 justify-between">
             {logoComponent || (
               <>
-                <OrbitIcon className="h-8 w-8 text-primary-900 dark:text-primary-100" />
+                <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                  <Image
+                    src="/static/images/logo.png"
+                    alt="Lustlocaties logo"
+                    fill
+                    sizes="32px"
+                    className="object-cover"
+                  />
+                </div>
 
                 <div className="hidden text-2xl font-semibold font-display sm:flex gap-2 h-full">
-                  Page <span className="font-bold">UI</span>
+                  Lust<span className="font-bold">locaties</span>
                 </div>
               </>
             )}

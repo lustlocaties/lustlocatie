@@ -79,10 +79,16 @@ export default function RootLayout({
   return (
     <html
       lang={siteConfig.language}
-      className={`${baseFont.variable} ${displayFont.variable} scroll-smooth`}
+      className={`${baseFont.variable} ${displayFont.variable} ultra-performance`}
       suppressHydrationWarning
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try { if (localStorage.getItem('brand-theme') === 'luxe') { document.documentElement.classList.add('theme-luxe'); } } catch (error) {}`,
+          }}
+        />
+
         <style>
           {`
           :root, :before, :after {

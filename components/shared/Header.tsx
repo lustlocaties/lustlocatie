@@ -1,4 +1,5 @@
 import { LandingHeader, LandingHeaderMenuItem } from '@/components/landing';
+import BrandThemeToggle from '@/components/shared/BrandThemeToggle';
 import ThemeSwitch from '@/components/shared/ThemeSwitch';
 import Image from 'next/image';
 
@@ -34,6 +35,7 @@ export const Header = ({ className }: { className?: string }) => {
         Dashboard
       </LandingHeaderMenuItem>
 
+      <BrandThemeToggle />
       <ThemeSwitch />
     </LandingHeader>
   );

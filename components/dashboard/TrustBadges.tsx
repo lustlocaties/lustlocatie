@@ -9,7 +9,7 @@ const icons = [BadgeCheckIcon, ShieldCheckIcon, HeadsetIcon];
 
 export function TrustBadges({ badges }: TrustBadgesProps) {
   return (
-    <section className="flex flex-wrap items-center justify-center gap-3 rounded-3xl border border-white/25 bg-white/20 p-4 backdrop-blur-xl dark:border-slate-200/10 dark:bg-slate-900/40">
+    <section className="ll-card flex flex-wrap items-center justify-center gap-3 rounded-3xl border border-white/25 bg-white/20 p-4 backdrop-blur-sm dark:border-slate-200/10 dark:bg-slate-900/40">
       {badges.map((badge, index) => {
         const Icon = icons[index] ?? BadgeCheckIcon;
 

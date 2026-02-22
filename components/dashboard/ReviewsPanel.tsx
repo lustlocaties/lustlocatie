@@ -7,7 +7,7 @@ type ReviewsPanelProps = {
 
 export function ReviewsPanel({ reviews }: ReviewsPanelProps) {
   return (
-    <aside className="rounded-3xl border border-white/25 bg-white/20 p-5 backdrop-blur-xl transition-colors dark:border-slate-200/10 dark:bg-slate-900/40 lg:h-full">
+    <aside className="ll-card rounded-3xl border border-white/25 bg-white/20 p-5 backdrop-blur-sm transition-colors dark:border-slate-200/10 dark:bg-slate-900/40 lg:h-full">
       <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Recent reviews</h2>
 
       <div className="mt-4 space-y-3 lg:max-h-screen lg:overflow-y-auto lg:pr-2">

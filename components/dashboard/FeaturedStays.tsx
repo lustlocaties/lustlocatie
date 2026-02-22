@@ -8,7 +8,7 @@ type FeaturedStaysProps = {
 
 export function FeaturedStays({ stays }: FeaturedStaysProps) {
   return (
-    <section className="space-y-4">
+    <section className="ll-featured space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 lg:text-3xl">
           Featured stays
@@ -22,7 +22,7 @@ export function FeaturedStays({ stays }: FeaturedStaysProps) {
         {stays.map((stay) => (
           <article
             key={stay.id}
-            className="group overflow-hidden rounded-3xl border border-white/25 bg-white/20 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-2xl hover:shadow-primary-500/20 dark:border-slate-200/10 dark:bg-slate-900/40 dark:hover:border-primary-700"
+            className="ll-card ll-card-elevated group overflow-hidden rounded-3xl border border-white/25 bg-white/20 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-2xl hover:shadow-primary-500/20 dark:border-slate-200/10 dark:bg-slate-900/40 dark:hover:border-primary-700"
           >
             <div className="relative h-44 overflow-hidden">
               <Image

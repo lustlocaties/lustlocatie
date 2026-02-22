@@ -36,12 +36,12 @@ const mapPins = [
 
 export function MetricsMapRow() {
   return (
-    <section className="grid grid-cols-1 gap-6 lg:grid-cols-10">
+    <section className="ll-metrics grid grid-cols-1 gap-6 lg:grid-cols-10">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-6">
         {scoreCards.map((card) => (
           <article
             key={card.id}
-            className="rounded-3xl border border-white/25 bg-white/20 p-5 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-200/10 dark:bg-slate-900/40 dark:hover:border-primary-700"
+            className="ll-card ll-card-elevated rounded-3xl border border-white/25 bg-white/20 p-5 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-200/10 dark:bg-slate-900/40 dark:hover:border-primary-700"
           >
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{card.title}</p>
@@ -63,7 +63,7 @@ export function MetricsMapRow() {
         ))}
       </div>
 
-      <article className="relative overflow-hidden rounded-3xl border border-white/25 bg-white/20 p-5 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-200/10 dark:bg-slate-900/40 lg:col-span-4">
+      <article className="ll-card ll-card-elevated ll-key-feature relative overflow-hidden rounded-3xl border border-white/25 bg-white/20 p-5 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-200/10 dark:bg-slate-900/40 lg:col-span-4">
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Live privacy map</h3>
           <MapPinnedIcon className="h-5 w-5 text-emerald-400" />

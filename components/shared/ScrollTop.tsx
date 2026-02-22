@@ -6,17 +6,29 @@ export const ScrollTop = () => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const handleWindowScroll = () => {
-      if (window.scrollY > 50) setShow(true);
-      else setShow(false);
+    let ticking = false;
+
+    const updateScrollState = () => {
+      setShow(window.scrollY > 50);
+      ticking = false;
     };
 
-    window.addEventListener('scroll', handleWindowScroll);
-    return () => window.removeEventListener('scroll', handleWindowScroll);
+    const handleWindowScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateScrollState);
+    };
+
+    updateScrollState();
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleWindowScroll);
+    };
   }, []);
 
   const handleScrollTop = () => {
-    window.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
