@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import {
   LogOutIcon,
@@ -22,10 +22,10 @@ type DashboardNavProps = {
 export function DashboardNav({ links }: DashboardNavProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [selectedSection, setSelectedSection] = useState('discover');
 
   useEffect(() => {
     let isMounted = true;
@@ -54,8 +54,17 @@ export function DashboardNav({ links }: DashboardNavProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (pathname !== '/work-in-progress') {
+      setSelectedSection('discover');
+      return;
+    }
+
+    const section = new URLSearchParams(window.location.search).get('section');
+    setSelectedSection(section ?? 'discover');
+  }, [pathname]);
+
   const workInProgressPath = '/work-in-progress';
-  const selectedSection = searchParams.get('section') ?? 'discover';
   const accountHref = isAuthenticated ? '/dashboard' : '/login';
   const accountLabel = isAuthenticated ? 'My account' : 'Sign in';
 

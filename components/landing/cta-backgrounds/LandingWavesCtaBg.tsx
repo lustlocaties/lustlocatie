@@ -300,7 +300,7 @@ export const LandingWavesCtaBg = ({
     return () => {
       window.removeEventListener('resize', onResize);
     };
-  }, [waveSpeedX, waveSpeedY, waveAmpX, waveAmpY, xGap, yGap]);
+  }, [waveSpeedX, waveSpeedY, waveAmpX, waveAmpY, xGap, yGap, generateNewColors]);
 
   return (
     <div ref={domRef} className={clsx('inset-0 opacity-70', className)}>
