@@ -1,9 +1,44 @@
+"use client";
+
+import { useEffect, useState } from 'react';
 import { LandingHeader, LandingHeaderMenuItem } from '@/components/landing';
 import BrandThemeToggle from '@/components/shared/BrandThemeToggle';
 import ThemeSwitch from '@/components/shared/ThemeSwitch';
 import Image from 'next/image';
 
 export const Header = ({ className }: { className?: string }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkSession = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (isMounted) {
+          setIsAuthenticated(response.ok);
+        }
+      } catch {
+        if (isMounted) {
+          setIsAuthenticated(false);
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const authHref = isAuthenticated ? '/dashboard' : '/auth';
+  const authLabel = isAuthenticated ? 'My account' : 'Inloggen';
+
   return (
     <LandingHeader
       className={className}
@@ -31,6 +66,7 @@ export const Header = ({ className }: { className?: string }) => {
         {'Security'}
       </LandingHeaderMenuItem>
       <LandingHeaderMenuItem href="/help">{'Help'}</LandingHeaderMenuItem>
+      <LandingHeaderMenuItem href={authHref}>{authLabel}</LandingHeaderMenuItem>
       <LandingHeaderMenuItem type="button" href="/dashboard">
         Dashboard
       </LandingHeaderMenuItem>

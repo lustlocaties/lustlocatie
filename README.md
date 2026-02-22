@@ -37,3 +37,38 @@ To build the site for production, run the following command:
 ```bash
 npm run build
 ```
+
+## MongoDB setup
+
+1. Install dependencies:
+
+```bash
+npm i
+```
+
+2. Create an environment file and set your database URL:
+
+```bash
+cp .env.example .env.local
+```
+
+Set `MONGODB_URI` in `.env.local`.
+
+3. Use the database connector and models:
+
+- Connector: `lib/db/mongoose.ts`
+- Models: `lib/models/User.ts`, `lib/models/Location.ts`, `lib/models/Review.ts`
+
+Example usage in an API route:
+
+```ts
+import { connectToDatabase } from '@/lib/db/mongoose';
+import { LocationModel } from '@/lib/models/Location';
+
+export async function GET() {
+	await connectToDatabase();
+	const locations = await LocationModel.find({ isPublished: true }).lean();
+	return Response.json({ data: locations });
+}
+```
+
